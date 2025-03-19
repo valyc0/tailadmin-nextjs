@@ -11,32 +11,43 @@ const IconWrapper = ({ children }: { children: React.ReactNode }) => (
 );
 
 export default function SignInForm() {
-  const { login } = useAuth();
+  const { login, isLoading: authLoading } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-
+  
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
+    setError("");
+    
     if (!username || !password) {
       setError("Please enter both username and password");
       return;
     }
     
-    setError("");
-    setLoading(true);
-    
     try {
-      await login(username, password);
-    } catch (error) {
-      // Display the error message from the server if available
-      const errorMessage = error instanceof Error
-        ? error.message
-        : "Authentication failed. Please check your credentials.";
-      setError(errorMessage);
-      console.error("Login error details:", error);
+      setLoading(true);
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('Server timeout')), 15000)
+      );
+      
+      await Promise.race([
+        login(username, password),
+        timeoutPromise
+      ]);
+    } catch (err: any) {
+      console.error("Login error:", err);
+      if (!navigator.onLine) {
+        setError("No internet connection. Please check your network.");
+      } else if (err instanceof TypeError && err.message.includes('fetch')) {
+        setError("Unable to connect to server. Please try again later.");
+      } else if (err.message === 'Server timeout') {
+        setError("Server is not responding. Please try again later.");
+      } else {
+        setError(err.message || "Invalid username or password");
+      }
     } finally {
       setLoading(false);
     }
@@ -55,12 +66,14 @@ export default function SignInForm() {
             </p>
           </div>
           <div>
-            <form onSubmit={handleSubmit} className="space-y-6">
-              {error && (
-                <div className="p-3 text-sm text-error-500 bg-error-50 rounded-lg">
-                  {error}
-                </div>
-              )}
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="mb-4">
+                {error && (
+                  <div className="p-4 text-lg font-bold text-red-600 bg-red-100 rounded border-l-4 border-red-600">
+                    ⚠️ {error}
+                  </div>
+                )}
+              </div>
               <div>
                 <Label>
                   Username <span className="text-error-500">*</span>{" "}
@@ -98,19 +111,21 @@ export default function SignInForm() {
                 </div>
               </div>
               <div>
-                {loading ? (
-                  <div className="flex justify-center">
-                    <div className="h-10 w-10 animate-spin rounded-full border-2 border-solid border-primary border-t-transparent"></div>
-                  </div>
-                ) : (
-                  <Button
-                    type="submit"
-                    className="w-full"
-                    size="sm"
-                  >
-                    Sign in
-                  </Button>
-                )}
+                <Button
+                  type="submit"
+                  className="w-full"
+                  size="sm"
+                  disabled={loading || authLoading}
+                >
+                  {(loading || authLoading) ? (
+                    <div className="flex justify-center items-center">
+                      <div className="h-5 w-5 mr-2 animate-spin rounded-full border-2 border-solid border-white border-t-transparent"></div>
+                      Signing in...
+                    </div>
+                  ) : (
+                    "Sign in"
+                  )}
+                </Button>
               </div>
             </form>
           </div>

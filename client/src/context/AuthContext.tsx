@@ -125,7 +125,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.message || 'Login failed');
+        const errorMessage = data.message || 'Invalid username or password';
+        throw new Error(errorMessage);
       }
 
       const newToken = data.token;
