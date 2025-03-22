@@ -11,7 +11,7 @@ interface ApiError extends Error {
   code?: string;
 }
 
-const BASE_URL = 'http://localhost:8080/api';
+const BASE_URL = '/api';
 
 const getAuthHeaders = () => {
   const token = sessionStorage.getItem('token');

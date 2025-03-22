@@ -36,7 +36,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const validateToken = async (token: string) => {
     try {
-      const response = await fetch('http://localhost:8080/api/auth/validate', {
+      const response = await fetch('/api/auth/validate', {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -113,7 +113,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = async (username: string, password: string) => {
     try {
       setIsLoading(true);
-      const response = await fetch('http://localhost:8080/api/auth/login', {
+      const response = await fetch('/api/auth/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -150,7 +150,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       
       if (currentToken) {
         // Do backend logout first
-        await fetch('http://localhost:8080/api/auth/logout', {
+        await fetch('/api/auth/logout', {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${currentToken}`,

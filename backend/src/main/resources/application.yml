@@ -22,6 +22,10 @@ jwt:
   secret: ${JWT_SECRET:c8d15ec8b80f46f2952c3f3b6d0794342459b6742df52173753011d861d4f17a}
   expiration: ${JWT_EXPIRATION:86400000}
 
+app:
+  cors:
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:8065,http://localhost:3000}
+
 logging:
   level:
     root: INFO
